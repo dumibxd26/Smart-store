@@ -49,12 +49,12 @@ router.get("/all", async (req, res) => {
     }
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete", async (req, res) => {
     try {
-        const { id } = req.params;
+        const { email } = req.body;
         const deleteUser = await pool.query(
-            "DELETE FROM user_info WHERE id = $1",
-            [id]
+            "DELETE FROM user_info WHERE email = $1",
+            [email]
         );
         res.json("User was deleted!");
     } catch (err) {
