@@ -1,10 +1,12 @@
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const compression = require('compression');
 
-// middleware
+
 app.use(cors());
 app.use(express.json());
+app.use(compression());
 
 const user = require('./routes/user');
 app.use('/api/user', user);

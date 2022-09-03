@@ -40,6 +40,38 @@ router.post("/login", async (req, res) => {
     }
 });
 
+router.put("/update", async (req, res) => {
+    try {
+        const { first_name, last_name,
+                email, birth_date,
+                password } = req.body;
+
+        const updateUser = await pool.query(
+            "UPDATE user_info SET first_name = $1, last_name = $2, email = $3, birth_date = $4, password = $5 WHERE email = $3 RETURNING *",
+            [first_name, last_name, email, birth_date, password]
+        );
+
+        res.json("User was updated");
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+router.get("/getOne", async (req, res) => {
+    try {
+        const { email } = req.body;
+            
+        const user = await pool.query(
+            "SELECT * FROM user_info WHERE email = $1",
+            [email]
+            );
+
+            res.json(user.rows[0].password);
+    } catch (err) {
+        console.error(err.message);
+    }
+});             
+
 router.get("/all", async (req, res) => {
     try {
         const allUsers = await pool.query("SELECT * FROM user_info");
