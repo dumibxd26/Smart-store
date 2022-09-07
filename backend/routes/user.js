@@ -1,7 +1,9 @@
 const express = require('express');
-const app = express();
 const router = express.Router();
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const reqAuth = require('../AuthMiddleware/safeRoutes');
+const activeSession = require('../AuthMiddleware/activeSessionSchema');
 
 // ROUTES //
 
@@ -22,7 +24,7 @@ const getUser = async (email) => {
     data : data
     };
    return await axios(config)
-    .then( response => JSON.stringify(response.data)
+    .then( response => JSON.stringify(response.data).slice(1, -1)
     ) .catch(function (error) {
     console.log(error);
 });
@@ -33,35 +35,69 @@ router.post("/login", async (req, res) => {
         console.log(req.body);
         const { email, password } = req.body;
 
-        const pass = await getUser(email);
+        const accountPassword = await getUser(email); // Hashed
 
-        bcrypt.compare(password, pass, function(err, isMatch) {
+        bcrypt.compare(password, accountPassword, function(err, isMatch) {
+
             if (isMatch) {
                 const token = jwt.sign({email: email}, "secretkey", {expiresIn: "86400"});
-                res.json({succes: true, token: 'JWT ' + token});
+
+                const session = {email: email, token: 'JWT ' + token};
+
+                activeSession.create(session, function(err, resp) {
+                    res.json({succes: true, token: 'JWT ' + token});
+                });
+
             } else {
                 res.json({succes: false, message: "Wrong password"});
             }
         });
 
-        // const user = await axios.post('http://localhost:5000/api/user/login', {
-        //     email: email,
-        //     password: password
-        // });
-
-        // res.json(user.data);
     } catch (err) {
         console.error(err.message);
     }
 });
 
-const crypteaza = async (password) => {
-    bcrypt.genSalt(10, (err, salt) => {
-        bcrypt.hash(password, salt, null, (err, hash) => {
-            return hash;
+router.post("/logout", async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        let find = await activeSession.findOne({email: email});
+
+        if (find) {
+            console.log({"user":find});
+
+        activeSession.deleteOne({email: email}, function(err, resp) {
+            if (err) throw err;
+            res.json({succes: true, message: "Logged out"});
+        });
+    } else {
+        res.json({succes: false, message: "Not logged in"});
+    }
+    } catch (err) {
+        console.error(err.message);
+    }
+});
+
+
+async function hashPassword (user) {
+
+    const password = user.password;
+    const saltRounds = 10;
+  
+    const hashedPassword = await new Promise((resolve, reject) => {
+    
+        bcrypt.genSalt(saltRounds, function(err, salt) {
+            bcrypt.hash(password, salt, function(err, hash) {
+                if(err) reject(err);
+                resolve(hash);
+            });
         });
     });
+    return hashedPassword;
+
 }
+  
 
 router.post("/register", async (req, res) => {
     try {
@@ -70,9 +106,7 @@ router.post("/register", async (req, res) => {
             email, birth_date,
             password } = req.body;
 
-        console.log(password);
-
-        password = await crypteaza(password);//Error
+        password = await hashPassword({password: password});
 
         console.log(password);
 
@@ -127,11 +161,12 @@ router.delete("/delete", async (req, res) => {
 });
 
 
-router.post("/check", async (req, res) => {
+router.post("/check", reqAuth, async (req, res) => {
     try {
-        console.log(req.body);
+        res.json(req.body);
     } catch (err) {
         console.error(err.message);
+        res.json({"msg": "Error"});
     }
 } );
 
