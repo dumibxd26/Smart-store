@@ -23,7 +23,8 @@ const getUser = async (email) => {
     },
     data : data
     };
-   return await axios(config)
+
+    return await axios(config)
     .then( response => JSON.stringify(response.data).slice(1, -1)
     ) .catch(function (error) {
     console.log(error);
@@ -33,7 +34,8 @@ const getUser = async (email) => {
 router.post("/login", async (req, res) => {
     try {
         console.log(req.body);
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        email = email.trim().toLowerCase();
 
         const accountPassword = await getUser(email); // Hashed
 
@@ -97,7 +99,11 @@ async function hashPassword (user) {
     return hashedPassword;
 
 }
-  
+
+const checkPassword = password => {
+    let regularExpression = /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,20}$/;
+    return regularExpression.test(password);
+}
 
 router.post("/register", async (req, res) => {
     try {
@@ -106,19 +112,26 @@ router.post("/register", async (req, res) => {
             email, birth_date,
             password } = req.body;
 
-        password = await hashPassword({password: password});
+        if (!checkPassword(password)) {
+            res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
+        } else {
+            password = await hashPassword({password: password});
+            email = email.trim();
+            first_name = first_name.trim();
+            last_name = last_name.trim();
 
-        console.log(password);
+            console.log(password);
 
-        const newUser = await axios.post('http://localhost:5000/api/user/register', {
-            first_name: first_name,
-            last_name: last_name,
-            email: email,
-            birth_date: birth_date,
-            password: password
-        });
-        console.log(newUser.data);
-        res.json(newUser.data);
+            const newUser = await axios.post('http://localhost:5000/api/user/register', {
+                first_name: first_name,
+                last_name: last_name,
+                email: email,
+                birth_date: birth_date,
+                password: password
+            });
+            console.log(newUser.data);
+            res.json(newUser.data);
+        }
     } catch (err) {
         console.error(err.message);
     }
@@ -127,19 +140,28 @@ router.post("/register", async (req, res) => {
 router.put("/update", async (req, res) => {
     try {
         console.log(req.body);
-        const { first_name, last_name,
+        let { first_name, last_name,
             email, birth_date,
             password } = req.body;
+        
+        if (!checkPassword(password)) {
+            res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
+        } else {
+            password = await hashPassword({password: password});
+            email = email.trim();
+            first_name = first_name.trim();
+            last_name = last_name.trim();
 
-        const updateUser = await axios.put('http://localhost:5000/api/user/update', {
-            first_name: first_name,
-            last_name: last_name,
-            email: email,
-            birth_date: birth_date,
-            password: password
-        });
-        console.log(updateUser.data);
-        res.json(updateUser.data);
+            const updateUser = await axios.put('http://localhost:5000/api/user/update', {
+                first_name: first_name,
+                last_name: last_name,
+                email: email,
+                birth_date: birth_date,
+                password: password
+            });
+            console.log(updateUser.data);
+            res.json(updateUser.data);
+        }
     } catch (err) {
         console.error(err.message);
     }
@@ -149,6 +171,7 @@ router.delete("/delete", async (req, res) => {
     try {
         console.log(req.body);
         const { email } = req.body;
+        email = email.trim().toLowerCase();
 
         const deleteUser = await axios.delete('http://localhost:5000/api/user/delete', {
             email: email

@@ -1,8 +1,21 @@
+const e = require("express");
 const express = require("express");
 const router = express.Router();
 const pool = require('../db');
 
 // ROUTES //
+
+const checkUserExistance = async email => {
+    
+    const user = await pool.query(
+        `SELECT * FROM user_info WHERE email = $1`,
+        [email])
+
+        if(user)
+            return user;
+        
+        return false;
+}
 
 router.post("/register", async (req, res) => {
     try {
@@ -10,12 +23,17 @@ router.post("/register", async (req, res) => {
                 email, birth_date,
                 password } = req.body;
         
+        const checkUser = await checkUserExistance(email);
+
+        if(checkUser.rows.length > 0)
+            res.json("User already exists");
+        else {
         const newUser = await pool.query(
             "INSERT INTO user_info (first_name, last_name, email, birth_date, password) VALUES ($1, $2, $3, $4, $5) RETURNING *",
             [first_name, last_name, email, birth_date, password]
         );      
-
         res.json(newUser.rows[0]);
+        }
     } catch (err) {
         console.error(err.message);
     }
@@ -30,7 +48,9 @@ router.post("/login", async (req, res) => {
             [email]
         );
 
-        if (password === user.rows[0].password) {
+        if(user.rows.length === 0) {
+            res.json("User does not exist");
+        } else if (password === user.rows[0].password) {
             res.json("Login successful");
         } else {
             res.json("Login failed");
@@ -46,12 +66,17 @@ router.put("/update", async (req, res) => {
                 email, birth_date,
                 password } = req.body;
 
-        const updateUser = await pool.query(
-            "UPDATE user_info SET first_name = $1, last_name = $2, email = $3, birth_date = $4, password = $5 WHERE email = $3 RETURNING *",
-            [first_name, last_name, email, birth_date, password]
-        );
+        const checkUser = await checkUserExistance(email);
 
-        res.json("User was updated");
+        if(checkUser.rows.length === 0) {
+            res.json("User does not exist");
+        } else {
+            const updateUser = await pool.query(
+                "UPDATE user_info SET first_name = $1, last_name = $2, email = $3, birth_date = $4, password = $5 WHERE email = $3 RETURNING *",
+                [first_name, last_name, email, birth_date, password]
+            );
+            res.json("User was updated");
+        }
     } catch (err) {
         console.error(err.message);
     }
@@ -60,13 +85,19 @@ router.put("/update", async (req, res) => {
 router.get("/getOne", async (req, res) => {
     try {
         const { email } = req.body;
-            
-        const user = await pool.query(
-            "SELECT * FROM user_info WHERE email = $1",
-            [email]
-            );
+
+        const checkUser = await checkUserExistance(email);
+
+        if(checkUser.rows.length === 0) {
+            res.json("User does not exist");
+        } else {
+            const user = await pool.query(
+                "SELECT * FROM user_info WHERE email = $1",
+                [email]
+                );
 
             res.json(user.rows[0].password);
+        }
     } catch (err) {
         console.error(err.message);
     }
@@ -84,11 +115,18 @@ router.get("/all", async (req, res) => {
 router.delete("/delete", async (req, res) => {
     try {
         const { email } = req.body;
-        const deleteUser = await pool.query(
-            "DELETE FROM user_info WHERE email = $1",
-            [email]
-        );
-        res.json("User was deleted!");
+
+        const checkUser = await checkUserExistance(email);
+
+        if(checkUser.rows.length === 0) {
+            res.json("User does not exist");
+        } else {
+            const deleteUser = await pool.query(
+                "DELETE FROM user_info WHERE email = $1",
+                [email]
+            );
+            res.json("User was deleted!");
+        }
     } catch (err) {
         console.error(err.message);
     }
