@@ -105,6 +105,14 @@ const checkPassword = password => {
     return regularExpression.test(password);
 }
 
+const checkEmail = (email) => {
+    return String(email)
+      .toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      );
+};
+
 router.post("/register", async (req, res) => {
     try {
         console.log(req.body);
@@ -114,6 +122,8 @@ router.post("/register", async (req, res) => {
 
         if (!checkPassword(password)) {
             res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
+        } else if (!checkEmail(email)) {
+            res.json({succes: false, message: "Invalid email"});
         } else {
             password = await hashPassword({password: password});
             email = email.trim();
@@ -146,6 +156,8 @@ router.put("/update", async (req, res) => {
         
         if (!checkPassword(password)) {
             res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
+        } else if (!checkEmail(email)) {
+            res.json({succes: false, message: "Invalid email"});
         } else {
             password = await hashPassword({password: password});
             email = email.trim();
