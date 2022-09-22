@@ -22,6 +22,7 @@
     "@angular/service-worker": "^14.1.0",
     "@ng-bootstrap/ng-bootstrap": "^13.0.0",
     "@popperjs/core": "^2.10.2",
+    "axios": "^0.27.2",
     "bootstrap": "^5.2.0",
     "ngx-bootstrap": "^9.0.0",
     "rxjs": "~7.5.0",

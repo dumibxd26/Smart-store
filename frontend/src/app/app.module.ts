@@ -11,6 +11,7 @@ import { BestOffersCarouselComponent } from './components/best-offers-carousel/b
 import { BestProductsComponent } from './components/best-products/best-products.component';
 import { ProductCategoriesComponent } from './components/product-categories/product-categories.component';
 import { ContactComponent } from './components/contact/contact.component';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -24,6 +25,7 @@ import { ContactComponent } from './components/contact/contact.component';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    HttpClientModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the application is stable
