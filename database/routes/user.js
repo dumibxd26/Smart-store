@@ -1,4 +1,3 @@
-const e = require("express");
 const express = require("express");
 const router = express.Router();
 const pool = require('../db');
@@ -41,7 +40,9 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
+        let { email, password } = req.body;
+        email = email.trim().tolowerCase();
+        password = password.trim();
 
         const user = await pool.query(
             "SELECT * FROM user_info WHERE email = $1",
@@ -85,6 +86,7 @@ router.put("/update", async (req, res) => {
 router.get("/getOne", async (req, res) => {
     try {
         const { email } = req.body;
+        console.log(req.body);
 
         const checkUser = await checkUserExistance(email);
 
