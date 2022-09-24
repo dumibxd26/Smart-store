@@ -27,41 +27,67 @@ const getUser = async (email) => {
     return await axios(config)
     .then( response => JSON.stringify(response.data).slice(1, -1)
     ) .catch(function (error) {
-    console.log(error);
+        return error;
 });
 }              
 
 router.post("/login", async (req, res) => {
     try {
-        console.log(req.body);
+
+        console.log(`Backend received login request from ${req.body.email} at ${new Date()}`);
+
         let { email, password } = req.body;
-        email = email.trim().toLowerCase();
+
+        email = email.toLowerCase().trim();
+        password = password.trim();
 
         const accountPassword = await getUser(email); // Hashed
 
         bcrypt.compare(password, accountPassword, function(err, isMatch) {
 
             if (isMatch) {
-                const token = jwt.sign({email: email}, "secretkey", {expiresIn: "86400"});
+                const token = jwt.sign({email: email}, "secretkey", {expiresIn: "15s"});
 
                 const session = {email: email, token: 'JWT ' + token};
 
-                activeSession.create(session, function(err, resp) {
-                    res.json({succes: true, token: 'JWT ' + token});
+                // Check if session already exists for the user
+                activeSession.findOne({email: email}, (err, doc) => {
+                    if (err) {
+                        res.status(500).json({error: err});
+                    } else if (doc) {
+                        // If session exists, update the token
+
+                        activeSession.findOneAndUpdate({email: email}, session, (err, doc) => {
+                            if (err) {
+                                res.status(500).json({error: err});
+                            } else {
+                                res.json({success: true, token: 'JWT ' + token});
+                            }
+                        });
+                    } else {
+                        // If session does not exist, create a new one
+                        activeSession.create(session, function(err, resp) {
+                            res.json({succes: true, token: 'JWT ' + token});
+                        });
+                
+                    }
                 });
 
             } else {
-                res.json({succes: false, message: "Wrong password"});
+                res.json({success: false});
             }
         });
 
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.post("/logout", async (req, res) => {
     try {
+
+        console.log(`Backend received logout request from ${req.body.email} at ${new Date()}`);
+
         const { email } = req.body;
 
         let find = await activeSession.findOne({email: email});
@@ -77,7 +103,7 @@ router.post("/logout", async (req, res) => {
         res.json({succes: false, message: "Not logged in"});
     }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
@@ -115,10 +141,15 @@ const checkEmail = (email) => {
 
 router.post("/register", async (req, res) => {
     try {
-        console.log(req.body);
-        let { first_name, last_name,
-            email, birth_date,
+        
+        console.log(`Backend received register request from ${req.body.email} at ${new Date()}`);
+        
+        let { firstName, lastName,
+            email, birthDate,
             password } = req.body;
+        
+        email = email.trim().toLowerCase();
+        password = password.trim();
 
         if (!checkPassword(password)) {
             res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
@@ -127,31 +158,33 @@ router.post("/register", async (req, res) => {
         } else {
             password = await hashPassword({password: password});
             email = email.trim();
-            first_name = first_name.trim();
-            last_name = last_name.trim();
+            firstName = firstName.trim();
+            lastName = lastName.trim();
 
             console.log(password);
 
             const newUser = await axios.post('http://localhost:5000/api/user/register', {
-                first_name: first_name,
-                last_name: last_name,
+                firstName: firstName,
+                lastName: lastName,
                 email: email,
-                birth_date: birth_date,
+                birthDate: birthDate,
                 password: password
             });
-            console.log(newUser.data);
-            res.json(newUser.data);
+
+            res.json({success : true, data: newUser.data});
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.put("/update", async (req, res) => {
     try {
-        console.log(req.body);
-        let { first_name, last_name,
-            email, birth_date,
+       
+        console.log(`Backend received update request from ${req.body.email} at ${new Date()}`);
+
+        let { firstName, lastName,
+            email, birthDate,
             password } = req.body;
         
         if (!checkPassword(password)) {
@@ -161,27 +194,29 @@ router.put("/update", async (req, res) => {
         } else {
             password = await hashPassword({password: password});
             email = email.trim();
-            first_name = first_name.trim();
-            last_name = last_name.trim();
+            firstName = firstName.trim();
+            lastName = lastName.trim();
 
             const updateUser = await axios.put('http://localhost:5000/api/user/update', {
-                first_name: first_name,
-                last_name: last_name,
+                firstName: firstName,
+                lastName: lastName,
                 email: email,
-                birth_date: birth_date,
+                birthDate: birthDate,
                 password: password
             });
             console.log(updateUser.data);
             res.json(updateUser.data);
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.delete("/delete", async (req, res) => {
     try {
-        console.log(req.body);
+        
+        console.log(`Backend received delete request from ${req.body.email} at ${new Date()}`);
+
         const { email } = req.body;
         email = email.trim().toLowerCase();
 
@@ -191,7 +226,7 @@ router.delete("/delete", async (req, res) => {
         console.log(deleteUser.data);
         res.json(deleteUser.data);
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 

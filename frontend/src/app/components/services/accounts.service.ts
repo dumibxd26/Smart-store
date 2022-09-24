@@ -1,20 +1,39 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';     
-import { Observable } from 'rxjs'; 
-import { Login } from '../interfaces/Login';
+import { Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' }) export class AccountsService {
     constructor(private http: HttpClient) {}
-    
-    headers = new HttpHeaders({
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-    });
 
-    getAccounts(body: any): Observable<any> {
+    headers = new HttpHeaders()
+    .set('Authorization', 'my-auth-token')
+    .set('Content-Type', 'application/json');
 
-        return this.http.post<any>('http://localhost:6000/user/login', body, { headers: this.headers });
+    options = {
+        headers: this.headers
+    };
+
+    sendLogin(account: any): Observable<any> {
+
+        const body = {
+            'email': account.email,
+            'password': account.password
+        }
+        return this.http.post<any>('http://localhost:5500/user/login', body, this.options);
     }
 
-    
+    sendRegister(account: any): Observable<any> {
+        
+        const body = {
+            'email': account.email,
+            'password': account.password,
+            'firstName': account.firstName,
+            'lastName': account.lastName,
+            'birthDate': account.birthDate
+        }
+
+        console.log(account);
+        return this.http.post<any>('http://localhost:5500/user/register', body, this.options);
     }
+
+}

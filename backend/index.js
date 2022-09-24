@@ -24,6 +24,14 @@ const connection = mongoose.connect(uri, connectionParams).then(() => {
 });
 
 const app = express();
+
+app.all("/*", function(req, res, next){
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
+  next();
+});
+
 app.use(cors({
     origin: '*'
 }));
@@ -33,12 +41,9 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(compression());
 
-
-// require('./config/passport')(passport);
-
 const user = require('./routes/user');
 app.use('/user', user);
 
-app.listen(6000, () => {
-    console.log("first server has started on port 6000");
+app.listen(5500, () => {
+    console.log("first server has started on port 5500");
 });
