@@ -20,7 +20,8 @@
           Login</button>
         </li>
         <li class="nav-item">
-          <button type="button" class="btn btn-lg btn-outline-danger">Register</button>
+          <button type="button" class="btn btn-lg btn-outline-danger"
+            (click)="toggleRegister()">Register</button>
         </li>
        
       </ul>
@@ -29,26 +30,74 @@
 </nav>
 
 
-<div [ngStyle] = modalBoxStyle()>
+<div [ngStyle] = modalBoxStyleLogin()>
 
-<div [ngStyle] = "modalStyle()">
-    <p>Login</p>
-
-    <form>
+<div [ngStyle] = "modalStyleLogin()">
+     
+    <div class = "box2">
+      <div class="loginLogo">Login</div>
+    <form style="font-size:1vw">
       <div class="mb-3">
-        <label for="InputEmail" class="form-label">Email address</label>
-        <input type="email" class="form-control" id="InputEmail" #inputEmail placeholder="john.doe@gmail.com">
+        <label for="inputEmailLog" class="form-label">Email address:</label>
+        <input type="email" class="form-control" id="inputEmailLog" #inputEmailLog placeholder="john.doe@gmail.com">
       </div>
       <div class="mb-3">
-        <label for="InputPassword" class="form-label">Password</label>
-        <input type="password" class="form-control" id="InputPassword" #inputPassword placeholder="Secure Password">
+        <label for="InputPasswordLog" class="form-label">Password:</label>
+        <input type="password" class="form-control" id="InputPasswordLog" #InputPasswordLog placeholder="Secure Password">
       </div>
-      <button type="button" class="btn btn-primary"
-               (click)="login({email:inputEmail.value, password: inputPassword.value})" >Submit</button>
-
+      <button type="button" class="btn btn-outline-warning submitButtonLogin"
+               (click)="login({email:inputEmailLog.value, password: InputPasswordLog.value})" >Submit</button>
 
     </form>
+    </div>
 
 </div>
 
+</div>
+
+
+<div [ngStyle] = modalBoxStyleRegister()>
+
+  <div [ngStyle] = "modalStyleRegister()">
+    <!-- Register form with first name, last name,  email, birthdate and password-->
+    <div class = "box3">
+      <div class="registerLogo">Register</div>
+
+      <form class="registerForm">
+
+<div class = "firstRegInput">
+
+      <div class="">
+        <label for="InputFirstName" class="form-label">First Name:</label>
+        <input type="text" class="form-control" id="InputFirstName" #inputFirstName placeholder="John">
+      </div>
+      <div class="">
+        <label for="InputLastName" class="form-label">Last Name:</label>
+        <input type="text" class="form-control" id="InputLastName" #inputLastName placeholder="Doe">
+      </div>
+      <div class="">
+        <label for="InputEmailreg" class="form-label">Email address:</label>
+        <input type="email" class="form-control" id="inputEmailReg" #inputEmailReg placeholder="John.Doe@gmail.com">
+      </div>
+</div>
+
+<div class = "secondRegInput">
+      <div class="">
+        <label for="InputPasswordReg" class="form-label">Password:</label>
+        <input type="password" class="form-control" id="InputPasswordReg" #InputPasswordReg placeholder="Secure Password">
+      </div>
+
+      <div class="">
+        <label for="InputBirthdate" class="form-label">Birthdate:</label>
+        <input type="date" class="form-control" id="InputBirthdate" #inputBirthdate placeholder="Secure Password">
+      </div> 
+      <div class = "centerRegisterButton">
+      <button type="button" class="btn btn-outline-warning submitButtonRegister"
+               (click)="register({firstName:inputFirstName.value, lastName: inputLastName.value, email:inputEmailReg.value, password: InputPasswordReg.value, birthdate: inputBirthdate.value})" >Submit</button>
+      </div>
+</div>
+      </form>
+
+</div>
+</div>
 </div>

@@ -18,31 +18,33 @@ const checkUserExistance = async email => {
 
 router.post("/register", async (req, res) => {
     try {
-        const { first_name, last_name,
-                email, birth_date,
+        console.log(`Database register request from ${req.body.email} at ${new Date()}`);
+
+        const { firstName, lastName,
+                email, birthDate,
                 password } = req.body;
-        
+
         const checkUser = await checkUserExistance(email);
 
         if(checkUser.rows.length > 0)
             res.json("User already exists");
         else {
         const newUser = await pool.query(
-            "INSERT INTO user_info (first_name, last_name, email, birth_date, password) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-            [first_name, last_name, email, birth_date, password]
+            "INSERT INTO user_info (firstName, lastName, email, birthDate, password) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+            [firstName, lastName, email, birthDate, password]
         );      
         res.json(newUser.rows[0]);
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.post("/login", async (req, res) => {
     try {
-        let { email, password } = req.body;
-        email = email.trim().tolowerCase();
-        password = password.trim();
+        console.log(`Database received login request from ${req.body.email} at ${new Date()}`);
+
+        const { email, password } = req.body;
 
         const user = await pool.query(
             "SELECT * FROM user_info WHERE email = $1",
@@ -57,14 +59,17 @@ router.post("/login", async (req, res) => {
             res.json("Login failed");
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.put("/update", async (req, res) => {
     try {
-        const { first_name, last_name,
-                email, birth_date,
+
+        console.log(`Database received update request from ${req.body.email} at ${new Date()}`);
+
+        const { firstName, lastName,
+                email, birthDate,
                 password } = req.body;
 
         const checkUser = await checkUserExistance(email);
@@ -73,20 +78,19 @@ router.put("/update", async (req, res) => {
             res.json("User does not exist");
         } else {
             const updateUser = await pool.query(
-                "UPDATE user_info SET first_name = $1, last_name = $2, email = $3, birth_date = $4, password = $5 WHERE email = $3 RETURNING *",
-                [first_name, last_name, email, birth_date, password]
+                "UPDATE user_info SET firstName = $1, lastName = $2, email = $3, birthDate = $4, password = $5 WHERE email = $3 RETURNING *",
+                [firstName, lastName, email, birthDate, password]
             );
             res.json("User was updated");
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.get("/getOne", async (req, res) => {
     try {
         const { email } = req.body;
-        console.log(req.body);
 
         const checkUser = await checkUserExistance(email);
 
@@ -101,7 +105,7 @@ router.get("/getOne", async (req, res) => {
             res.json(user.rows[0].password);
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });             
 
@@ -110,12 +114,15 @@ router.get("/all", async (req, res) => {
         const allUsers = await pool.query("SELECT * FROM user_info");
         res.json(allUsers.rows);
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 
 router.delete("/delete", async (req, res) => {
     try {
+
+        console.log(`Database received delete request from ${req.body.email} at ${new Date()}`);
+
         const { email } = req.body;
 
         const checkUser = await checkUserExistance(email);
@@ -130,7 +137,7 @@ router.delete("/delete", async (req, res) => {
             res.json("User was deleted!");
         }
     } catch (err) {
-        console.error(err.message);
+        res.status(500).json({error: err});
     }
 });
 

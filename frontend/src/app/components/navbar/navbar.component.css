@@ -5,3 +5,85 @@ li {
 ul {
     margin-right: 2vw;
 }
+
+.box2 {
+  /* display in the center of the modal which is a div */
+  margin: 0 auto;
+  width: 50%;
+  height: 50%;
+}
+
+.loginLogo {
+  margin-top: 2vw;
+  margin-left: 4vw;
+  margin-right: 5vw;
+  margin-bottom: 2vw;
+  font-size: 2.5vw;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+}
+
+.submitButtonLogin {
+  margin-top: 1vw;
+  margin-left: 4vw;
+  margin-right: 5vw;
+  margin-bottom: 3vw; 
+  font-size: 1.5vw;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+  color: yellow;
+}
+
+.registerForm {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 30vw;
+}
+
+.firstRegInput {
+  width: 50%;
+  margin-right: 2vw;
+  margin-top: 0.5vw;
+}
+
+.secondRegInput {
+  width: 50%;
+  margin-top: 1vw;
+  margin-left: 2vw;
+}
+
+.registerLogo {
+  margin-top: 2vw;
+  margin-left: 6vw;
+  margin-right: 5vw;
+  margin-bottom: 1vw;
+  font-size: 3vw;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+}
+
+.submitButtonRegister {
+  margin-top: 1vw;
+  /* margin-left: 4vw;
+  margin-right: 5vw;
+  margin-bottom: 3vw;  */
+  font-size: 1.5vw;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+  color: yellow;
+}
+
+.centerRegisterButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box3 {
+  /* display in the center of the modal which is a div */
+  margin: 0 auto;
+  width: 70%;
+  height: 50%;
+}
