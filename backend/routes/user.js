@@ -4,6 +4,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const reqAuth = require('../AuthMiddleware/safeRoutes');
 const activeSession = require('../AuthMiddleware/activeSessionSchema');
+require ('dotenv').config();
 
 // ROUTES //
 
@@ -46,7 +47,10 @@ router.post("/login", async (req, res) => {
         bcrypt.compare(password, accountPassword, function(err, isMatch) {
 
             if (isMatch) {
-                const token = jwt.sign({email: email}, "secretkey", {expiresIn: "15s"});
+
+                const secretkey = process.env.SECRET_KEY;
+             
+                const token = jwt.sign({email: email}, secretkey, {expiresIn: "1d", algorithm: "HS256"});
 
                 const session = {email: email, token: 'JWT ' + token};
 
@@ -161,8 +165,6 @@ router.post("/register", async (req, res) => {
             firstName = firstName.trim();
             lastName = lastName.trim();
 
-            console.log(password);
-
             const newUser = await axios.post('http://localhost:5000/api/user/register', {
                 firstName: firstName,
                 lastName: lastName,
@@ -171,10 +173,13 @@ router.post("/register", async (req, res) => {
                 password: password
             });
 
-            res.json({success : true, data: newUser.data});
+            if(newUser.data === "User already exists")
+                res.json({succes: false, message: "User already exists"});
+            else 
+                res.json({success : true, data: newUser.data});
         }
     } catch (err) {
-        res.status(500).json({error: err});
+        res.status(500).json({success: false, error: err});
     }
 });
 
@@ -230,14 +235,35 @@ router.delete("/delete", async (req, res) => {
     }
 });
 
+// Async function to delete all sessions from the database ActiveSession
+async function deleteAllSessions() {
+    try {
+        await activeSession.deleteMany({});
+        console.log("Collection deleted");
+        return true;
+    } catch (err) {
+        return err;
+    }
+}
 
 router.post("/check", reqAuth, async (req, res) => {
     try {
-        res.json(req.body);
+        if (req.body.deleteDB === "true") {
+
+            const deleteDbResponse = await deleteAllSessions();
+
+            if(deleteDbResponse === true) 
+                res.json({succes: true, message: "Collection deleted"});
+            else
+                res.json({succes: false, message: "Collection not deleted", error: deleteDbResponse});
+        }
+        else {
+            res.json({succes : true, body: req.body});
+        }
     } catch (err) {
         console.error(err.message);
-        res.json({"msg": "Error"});
+        res.json({msg: "Error"});
     }
-} );
+});
 
 module.exports = router;
