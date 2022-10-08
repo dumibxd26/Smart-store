@@ -13,17 +13,17 @@ const reqAuth = (req, res, next) => {
         if (err) {
             res.status(500).json({error: err});
         } else if (doc) {
-            
+
             // Remove the first 4 letters from the token to get the actual token
             token = String(req.headers.authorization).slice(4);
-            
+
             // Obtain the expiry date of the token from the token
 
             try {
                 const expiryDate = jwt.decode(token).exp;
     
                 const decode = jwt.verify(token, process.env.SECRET_KEY);
-    
+
                 console.log(decode);
     
                 // Check if the token has expired

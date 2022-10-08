@@ -14,7 +14,6 @@ import { Observable } from 'rxjs';
     };
 
     sendLogin(account: any): Observable<any> {
-
         const body = {
             'email': account.email,
             'password': account.password
@@ -23,7 +22,6 @@ import { Observable } from 'rxjs';
     }
 
     sendRegister(account: any): Observable<any> {
-        
         const body = {
             'email': account.email,
             'password': account.password,
@@ -31,9 +29,21 @@ import { Observable } from 'rxjs';
             'lastName': account.lastName,
             'birthDate': account.birthDate
         }
-
-        console.log(account);
         return this.http.post<any>('http://localhost:5500/user/register', body, this.options);
     }
 
+    sendLogout(token: string): Observable<any> {
+        const body = {
+            'token': token
+        }
+        return this.http.post<any>('http://localhost:5500/user/logout', body, this.options);
+    }
+
+    checkDefaultToken(token: string): Observable<any> {
+        const headers = new HttpHeaders().set('Authorization', token);
+        const body = {
+            'token': token
+        }
+        return this.http.post<any>('http://localhost:5500/user/check', body, { headers });
+    }
 }

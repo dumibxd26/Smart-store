@@ -14,29 +14,102 @@ import { CookieService } from 'ngx-cookie-service';
 export class NavbarComponent implements OnInit {
 
   constructor(private accountsService: AccountsService, private http: HttpClient,
-              private cookieService: CookieService) { 
-                  this.cookieService.set('test', 'Hello World!');
-
-              }
-  
+              private cookieService: CookieService) {}
   
   ngOnInit(): void {
+      
+    const token = this.cookieService.get('token');
+
+    this.accountsService.checkDefaultToken(token).subscribe((data) => {
+      if (data.success === true) {
+        this.toggleLRVisibility();
+        this.toggleLogoutVisibility();
+      }
+    });
   }
-  
-  
+
+  isVisibleLRuttons : string = 'visible';
+  positionLRButtons: string = 'relative';
+
+  isVisibleLogoutButton : string = 'hidden';
+  positionLogoutButton: string = 'absolute';
+
+  LRVisibility() {
+    return {
+      'visibility': this.isVisibleLRuttons,
+      'position': this.positionLRButtons
+    }
+  }
+
+  logoutVisibility() {
+    return {
+      'visibility': this.isVisibleLogoutButton,
+      'position': this.positionLogoutButton
+    }
+  }
+
+  toggleLRVisibility() {
+    if (this.isVisibleLRuttons === 'visible') {
+      this.isVisibleLRuttons = 'hidden';
+      this.positionLRButtons = 'absolute';
+    } else {
+      this.isVisibleLRuttons = 'visible';
+      this.positionLRButtons = 'relative';
+    }
+  }
+
+  toggleLogout() {
+    const token = this.cookieService.get('token');
+
+    this.accountsService.sendLogout(token).subscribe((data) => {
+      
+      if(data.success) 
+        console.log("Logout successful, solve later");
+
+      this.cookieService.delete('token');
+      this.toggleLogoutVisibility();
+      this.toggleLRVisibility();
+  });
+}
+
+  toggleLogoutVisibility() {
+    if (this.isVisibleLogoutButton === 'visible') {
+      this.isVisibleLogoutButton = 'hidden';
+      this.positionLogoutButton = 'absolute';
+    } else {
+      this.isVisibleLogoutButton = 'visible';
+      this.positionLogoutButton = 'relative';
+    }
+  }
+
+  'isVisibleError': string = 'hidden';
+  'errorBoxPosition': string = 'absolute';
+  'errorMessage' : string = 'Invalid information';
+
+  toggleError() {
+    if (this.isVisibleError === 'visible') {
+      this.isVisibleError = 'hidden';
+      this.errorBoxPosition = 'absolute';
+    } else {
+      this.isVisibleError = 'visible';
+      this.errorBoxPosition = 'relative';
+    }
+  }
 
   'isVisibleLogin': string = 'hidden';
   'modalBoxPositionLogin': string = 'absolute';
 
   toggleLogin() {
-    if (this.isVisibleLogin == 'visible') {
+    if (this.isVisibleLogin === 'visible') {
       this.isVisibleLogin = 'hidden';
       this.modalBoxPositionLogin = 'absolute';
+
+      if (this.isVisibleError === 'visible')
+        this.toggleError();
     } else {
-
-      if(this.isVisibleRegister == 'visible') 
+      if (this.isVisibleRegister === 'visible') 
         this.toggleRegister();
-
+      
       this.isVisibleLogin = 'visible';
       this.modalBoxPositionLogin = 'relative';
     }
@@ -71,12 +144,27 @@ export class NavbarComponent implements OnInit {
     }
 
     this.accountsService.sendLogin(account).subscribe((data) => {
-      if(data.success == true) 
-        {
+
+      if(data.success === true) {
           this.toggleLogin();
+          this.toggleLRVisibility();
+          this.toggleLogoutVisibility();
+
+          // No need to toggle error because it toggles on login/register
+          // if (this.isVisibleError === 'visible')
+          //   this.toggleError();
+
           this.cookieService.set('token', data.token);
           console.log(this.cookieService.get('token'));
-        }
+
+          // Refresh the page if login is successful
+          window.location.reload();
+      } else {
+        this.errorMessage = data.message;
+
+        if(this.isVisibleError === 'hidden')
+          this.toggleError();
+      }
     }
     );
   }
@@ -85,12 +173,15 @@ export class NavbarComponent implements OnInit {
   'modalBoxPositionLoginRegister': string = 'absolute';
 
   toggleRegister() {
-    if (this.isVisibleRegister == 'visible') {
+    if (this.isVisibleRegister === 'visible') {
       this.isVisibleRegister = 'hidden';
       this.modalBoxPositionLoginRegister = 'absolute';
+
+      if (this.isVisibleError === 'visible')
+        this.toggleError();
     } else {
 
-      if(this.isVisibleLogin == 'visible') 
+      if(this.isVisibleLogin === 'visible') 
         this.toggleLogin();
 
       this.isVisibleRegister = 'visible';
@@ -118,7 +209,17 @@ export class NavbarComponent implements OnInit {
       'align-items': 'center'
     }
   }
-
+  
+  styleErrorBox() {
+    return {
+      'visibility': this.isVisibleError,
+      'position': this.errorBoxPosition,
+      'display': 'flex',
+      'align-items': 'center',
+      'justify-content': 'center'
+    }
+  }
+  
   register(value: any) {
 
     const account = {
@@ -130,11 +231,21 @@ export class NavbarComponent implements OnInit {
     }
 
     this.accountsService.sendRegister(account).subscribe((data) => {
-      if (data.success == true) {
+      if (data.success === true) {
         this.toggleRegister();
+        this.toggleLRVisibility();
+        this.toggleLogoutVisibility();
+
+        // Refresh the page if login is successful
+        window.location.reload();
+      } else {
+        this.errorMessage = data.message;
+        
+        if(this.isVisibleError === 'hidden')
+          this.toggleError();
       }
     }
     );
   }
-  
+
 }

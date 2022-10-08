@@ -87,3 +87,16 @@ ul {
   width: 70%;
   height: 50%;
 }
+
+/* Style error message and center it */
+.styleError {
+  background: red;
+  width: 50%;
+  font-size: 1.5vw;
+  font-weight: bold;
+  font-family: Verdana, sans-serif;
+  text-align: center;
+  border-radius: 20px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
