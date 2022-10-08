@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light">
   <div class="container-fluid">
-    <a class="navbar-brand" href="#">Webapp</a>
+    <a class="navbar-brand" href="#">Smart Store</a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -14,20 +14,35 @@
 
       <ul class="navbar-nav mb-2 mb-lg-0" >
 
-        <li class="nav-item">
+        <li class="nav-item" [ngStyle] = LRVisibility()>
           <button type="button" class="btn btn-lg btn-outline-danger"
             (click)="toggleLogin()">
           Login</button>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" [ngStyle] = LRVisibility()>
           <button type="button" class="btn btn-lg btn-outline-danger"
             (click)="toggleRegister()">Register</button>
         </li>
+
+        <div [ngStyle] = logoutVisibility() >
+          <li class="nav-item">
+            <button type="button" class="btn btn-lg btn-outline-danger"
+              (click)="toggleLogout()">Logout</button>
+          </li>
+        </div>
        
       </ul>
     </div>
   </div>
 </nav>
+
+<div [ngStyle] = styleErrorBox()>
+
+  <div class = "styleError">
+    <p>{{errorMessage}}</p>
+  </div> 
+
+</div>
 
 
 <div [ngStyle] = modalBoxStyleLogin()>
@@ -54,7 +69,6 @@
 </div>
 
 </div>
-
 
 <div [ngStyle] = modalBoxStyleRegister()>
 

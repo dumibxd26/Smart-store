@@ -57,7 +57,7 @@ router.post("/login", async (req, res) => {
                 // Check if session already exists for the user
                 activeSession.findOne({email: email}, (err, doc) => {
                     if (err) {
-                        res.status(500).json({error: err});
+                        res.status(500).json({error: err, message: "Something went wrong, please try again later"});
                     } else if (doc) {
                         // If session exists, update the token
 
@@ -71,19 +71,19 @@ router.post("/login", async (req, res) => {
                     } else {
                         // If session does not exist, create a new one
                         activeSession.create(session, function(err, resp) {
-                            res.json({succes: true, token: 'JWT ' + token});
+                            res.json({success: true, token: 'JWT ' + token});
                         });
                 
                     }
                 });
 
             } else {
-                res.json({success: false});
+                res.json({s: false, message: "email or password is incorrect"});
             }
         });
 
     } catch (err) {
-        res.status(500).json({error: err});
+        res.status(500).json({error: err, message: "Something went wrong, please try again later"});
     }
 });
 
@@ -92,22 +92,22 @@ router.post("/logout", async (req, res) => {
 
         console.log(`Backend received logout request from ${req.body.email} at ${new Date()}`);
 
-        const { email } = req.body;
+        const { token } = req.body;
 
-        let find = await activeSession.findOne({email: email});
+        let find = await activeSession.findOne({token: token});
 
         if (find) {
-            console.log({"user":find});
+            console.log({"user": find});
 
-        activeSession.deleteOne({email: email}, function(err, resp) {
+        activeSession.deleteOne({token: token}, function(err, resp) {
             if (err) throw err;
-            res.json({succes: true, message: "Logged out"});
+            res.json({success: true, message: "Logged out"});
         });
     } else {
-        res.json({succes: false, message: "Not logged in"});
+        res.json({success: false, message: "Not logged in"});
     }
     } catch (err) {
-        res.status(500).json({error: err});
+        res.status(500).json({success: false, error: err});
     }
 });
 
@@ -156,9 +156,9 @@ router.post("/register", async (req, res) => {
         password = password.trim();
 
         if (!checkPassword(password)) {
-            res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
+            res.json({success: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
         } else if (!checkEmail(email)) {
-            res.json({succes: false, message: "Invalid email"});
+            res.json({success: false, message: "Invalid email"});
         } else {
             password = await hashPassword({password: password});
             email = email.trim();
@@ -174,12 +174,12 @@ router.post("/register", async (req, res) => {
             });
 
             if(newUser.data === "User already exists")
-                res.json({succes: false, message: "User already exists"});
+                res.json({success: false, message: "User already exists"});
             else 
                 res.json({success : true, data: newUser.data});
         }
     } catch (err) {
-        res.status(500).json({success: false, error: err});
+        res.status(500).json({success: false, error: err, message: "Something went wrong, please try again later"});
     }
 });
 
@@ -193,9 +193,9 @@ router.put("/update", async (req, res) => {
             password } = req.body;
         
         if (!checkPassword(password)) {
-            res.json({succes: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
+            res.json({success: false, message: "Password must contain 8-20 characters, at least one number and one special character"});
         } else if (!checkEmail(email)) {
-            res.json({succes: false, message: "Invalid email"});
+            res.json({success: false, message: "Invalid email"});
         } else {
             password = await hashPassword({password: password});
             email = email.trim();
@@ -246,6 +246,14 @@ async function deleteAllSessions() {
     }
 }
 
+router.post("/checkDefaultToken", reqAuth, async (req, res) => {
+    try {
+        res.json({success: true, message: "Token is valid"});
+    } catch (err) {
+        res.status(500).json({success: false, error: err});
+    }
+});
+
 router.post("/check", reqAuth, async (req, res) => {
     try {
         if (req.body.deleteDB === "true") {
@@ -253,12 +261,12 @@ router.post("/check", reqAuth, async (req, res) => {
             const deleteDbResponse = await deleteAllSessions();
 
             if(deleteDbResponse === true) 
-                res.json({succes: true, message: "Collection deleted"});
+                res.json({success: true, message: "Collection deleted"});
             else
-                res.json({succes: false, message: "Collection not deleted", error: deleteDbResponse});
+                res.json({success: false, message: "Collection not deleted", error: deleteDbResponse});
         }
         else {
-            res.json({succes : true, body: req.body});
+            res.json({success : true, body: req.body});
         }
     } catch (err) {
         console.error(err.message);
